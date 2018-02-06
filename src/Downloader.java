@@ -1,50 +1,56 @@
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Downloader {
+/**
+ * Created by Makarovaa on 06.02.18.
+ */
+public class Downloader implements Runnable {
 
-   private int numberOfThreads = 0;
-   private int speedLimit = 0 ;
-   private String pathToFile = "";
-   private String outputFolder = "";
-   private HashMap<String,HashSet<String>> urls;
+    private String url;
+    private HashSet<String> namesTosave;
 
-    public Downloader (int numberOfThreads, int speedLimit, String pathToFile, String outputFolder){
-        this.numberOfThreads = numberOfThreads;
-        this.speedLimit = speedLimit;
-        this.pathToFile = pathToFile;
-        this.outputFolder = outputFolder;
+    public Downloader(String url, HashSet<String> namesTosave) {
+        this.url = url;
+        this.namesTosave = namesTosave;
     }
 
-    private void parseUrls ()  {
-        urls = new HashMap<>();
-        try ( BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(pathToFile)))) {
-            while (bufferedReader.ready()){
-                String temp = bufferedReader.readLine();
-                String [] line = temp.split(" ");
-                String url = line[0];
-                String filename = line[1];
-                if (!urls.containsKey(url)){
-                    HashSet<String> hashSet = new HashSet<>();
-                    hashSet.add(filename);
-                    urls.put(url,hashSet);
-                } else {
-                    if (urls.get(url)!=null){
-                        HashSet<String> tempHashSet = new HashSet<>();
-                        tempHashSet.addAll((urls.get(url)));
-                        tempHashSet.add(filename);
-                        urls.put(url,tempHashSet);
-                    } else throw new Exception("Ошибка в формате файла со ссылками.") ;
+    @Override
+    public void run() {
+        try {
+            URL u = new URL(url);
+            HttpURLConnection connect = (HttpURLConnection) u.openConnection();
+            connect.setReadTimeout(0);
+            int response = connect.getResponseCode();
+
+            if (response == HttpURLConnection.HTTP_OK) {
+                try (InputStream inputStream = connect.getInputStream()) {
+                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+
+                        byte buffer[] = new byte[1024];
+                        int bytes = 0;
+
+                        while (inputStream.available()>0){
+                            bytes = inputStream.read(buffer);
+
+                        }
+
+
+                        for (String fileName : namesTosave) {
+
+                        }
+
+
+                    }
+                }
                 }
 
 
-            }
+            } catch (IOException i) {
+            System.err.println("Ошибка чтения/записи.");
         }
-        catch (Exception e){
-            System.out.println("Ошибка чтения файла со ссылками.");
-        }
-
-
     }
 }

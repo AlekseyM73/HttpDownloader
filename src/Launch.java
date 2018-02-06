@@ -2,8 +2,6 @@ import java.io.File;
 
 public class Launch {
 
-
-
     public static void main(String[] args)  {
          int numberOfThreads = 0;
          int speedLimit = 0 ;
@@ -53,7 +51,7 @@ public class Launch {
             System.out.println("Неправильно указан путь к папке для загруженных файлов.");
             return;
         }
-      //  new Downloader(numberOfThreads,speedLimit,pathToFile,outputFolder).
+        new Manager(numberOfThreads,speedLimit,pathToFile,outputFolder);
     }
 
     private static int parseSpeedLimit (String s){
@@ -74,6 +72,7 @@ public class Launch {
         return result;
 
     }
+
 }
 
 
