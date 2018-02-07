@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -12,10 +10,14 @@ public class Downloader implements Runnable {
 
     private String url;
     private HashSet<String> namesTosave;
+    private static volatile long totalBytesRead = 0;
+    private int speedLimit;
+    private static volatile int elapsedTime;
 
     public Downloader(String url, HashSet<String> namesTosave) {
         this.url = url;
         this.namesTosave = namesTosave;
+        speedLimit = Manager.getSpeedLimit();
     }
 
     @Override
@@ -30,27 +32,49 @@ public class Downloader implements Runnable {
                 try (InputStream inputStream = connect.getInputStream()) {
                     try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
+                        long initTime = System.currentTimeMillis();
                         byte buffer[] = new byte[1024];
-                        int bytes = 0;
+                        int bytes;
 
-                        while (inputStream.available()>0){
-                            bytes = inputStream.read(buffer);
+                        while ((bytes = inputStream.read(buffer))>=0) {
+                            int currentSpeed;
 
+                            long now = System.currentTimeMillis();
+                            totalBytesRead += bytes;
+                            currentSpeed = Math.round(totalBytesRead / ((float) (now - initTime ) / 1000));
+
+                            if (speedLimit > 0 && currentSpeed > speedLimit) {
+                                int timeSleep = Math.round((float) (currentSpeed - speedLimit) / speedLimit * (now - initTime));
+                                try {
+                                    Thread.sleep(timeSleep);
+                                } catch (InterruptedException i){
+                                    i.printStackTrace();
+                                }
+                            }
+                            byteArrayOutputStream.write(buffer,0,bytes);
+                            for (String fileName : namesTosave) {
+                                saveFiles(byteArrayOutputStream,fileName);
+                            }
                         }
-
-
-                        for (String fileName : namesTosave) {
-
-                        }
-
-
                     }
                 }
-                }
+            }
+        } catch (IOException i) {
+            System.err.println("Ошибка загрузки файла. "+ url);
+        }
+        elapsedTime =(int)(System.currentTimeMillis()- Launch.getTime())/1000;
+      //  System.out.println("elapsed time "+elapsedTime);
+      //  System.out.println("total kilobytes read" +totalBytesRead/1000 );
 
+    }
 
-            } catch (IOException i) {
-            System.err.println("Ошибка чтения/записи.");
+    private void saveFiles (ByteArrayOutputStream b, String fileName){
+            File file = new File(fileName);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            b.writeTo(fileOutputStream);
+            System.out.println("Файл "+file.getName()+" загружен.");
+        } catch (Exception e) {
+            System.out.println("Ошибка при записи скачанного файла " + fileName);
         }
     }
 }

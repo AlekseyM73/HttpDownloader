@@ -2,7 +2,14 @@ import java.io.File;
 
 public class Launch {
 
+    private static long time;
+
+    public static long getTime() {
+        return time;
+    }
+
     public static void main(String[] args)  {
+        System.setProperty("java.net.useSystemProxies", "true");
          int numberOfThreads = 0;
          int speedLimit = 0 ;
          String pathToFile = "";
@@ -33,7 +40,7 @@ public class Launch {
                     }
                 }
                 catch (IllegalArgumentException e){
-                    System.out.println("Указаны неверные параметры.");
+                    System.err.println("Указаны неверные параметры.");
                     return;
                 }
            }
@@ -51,7 +58,10 @@ public class Launch {
             System.out.println("Неправильно указан путь к папке для загруженных файлов.");
             return;
         }
+        time = System.currentTimeMillis();
         new Manager(numberOfThreads,speedLimit,pathToFile,outputFolder);
+
+
     }
 
     private static int parseSpeedLimit (String s){

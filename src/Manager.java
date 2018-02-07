@@ -22,10 +22,6 @@ public class Manager {
         startDownload();
     }
 
-    public static int getNumberOfThreads() {
-        return numberOfThreads;
-    }
-
     public static int getSpeedLimit() {
         return speedLimit;
     }
@@ -36,6 +32,10 @@ public class Manager {
             while (bufferedReader.ready()){
                 String temp = bufferedReader.readLine();
                 String [] line = temp.split(" ");
+                if (line.length<2){
+                    System.out.println("Ошибка в формате файла со ссылками.");
+                    System.exit(1);
+                }
                 String url = line[0];
                 String filename = line[1];
                 if (!urls.containsKey(url)){
@@ -48,12 +48,16 @@ public class Manager {
                         tempHashSet.addAll((urls.get(url)));
                         tempHashSet.add(outputFolder+File.separator+filename);
                         urls.put(url,tempHashSet);
-                    } else throw new Exception("Ошибка в формате файла со ссылками.") ;
+                    } else {
+                        System.out.println("Ошибка в формате файла со ссылками.");
+                        System.exit(1);
+                    }
+
                 }
             }
         }
-        catch (Exception e){
-            System.out.println("Ошибка чтения файла со ссылками.");
+        catch (IOException i){
+            System.err.println("Ошибка чтения файла со ссылками.");
         }
 
 
@@ -64,6 +68,7 @@ public class Manager {
             String key = entry.getKey();
             HashSet<String> value = entry.getValue();
             executorService.submit(new Downloader(key,value));
+
         }
 
     }
