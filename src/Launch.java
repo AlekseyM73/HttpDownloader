@@ -23,7 +23,10 @@ public class Launch {
                     if (arg.charAt(0) == '-'){
                         switch (arg.charAt(1)){
                             case 'n':
-                                numberOfThreads = Integer.parseInt(args[i+1]);
+                                if (Integer.parseInt(args[i+1])<=0){
+                                    numberOfThreads = 1;
+                                } else numberOfThreads = Integer.parseInt(args[i+1]);
+
                                 break;
                             case 'l':
                                 speedLimit = parseSpeedLimit(args[i+1]);
@@ -59,9 +62,7 @@ public class Launch {
             return;
         }
         time = System.currentTimeMillis();
-        new Manager(numberOfThreads,speedLimit,pathToFile,outputFolder);
-
-
+        new Manager(numberOfThreads,speedLimit,pathToFile,outputFolder).startDownload();
     }
 
     private static int parseSpeedLimit (String s){
@@ -80,9 +81,7 @@ public class Launch {
             }
         }
         return result;
-
     }
-
 }
 
 

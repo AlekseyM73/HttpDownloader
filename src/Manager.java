@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Manager {
 
@@ -19,7 +20,6 @@ public class Manager {
         this.pathToFile = pathToFile;
         this.outputFolder = outputFolder;
         parseUrls();
-        startDownload();
     }
 
     public static int getSpeedLimit() {
@@ -52,24 +52,34 @@ public class Manager {
                         System.out.println("Ошибка в формате файла со ссылками.");
                         System.exit(1);
                     }
-
                 }
             }
         }
         catch (IOException i){
             System.err.println("Ошибка чтения файла со ссылками.");
         }
-
-
     }
-    private void startDownload(){
+
+     void startDownload(){
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         for (Map.Entry<String,HashSet<String>> entry: urls.entrySet()){
             String key = entry.getKey();
             HashSet<String> value = entry.getValue();
             executorService.submit(new Downloader(key,value));
-
         }
 
+        executorService.shutdown();
+
+         try {
+             executorService.awaitTermination(Integer.MAX_VALUE, TimeUnit.DAYS);
+             showStatistic();
+         } catch (InterruptedException i){
+             i.printStackTrace();
+         }
+    }
+
+     void showStatistic (){
+         System.out.println("Время работы "+Downloader.getElapsedTime()+" c");
+         System.out.println("Загружено "+Downloader.getTotalBytesRead()+" байт");
     }
 }

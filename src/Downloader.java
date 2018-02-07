@@ -11,6 +11,7 @@ public class Downloader implements Runnable {
     private String url;
     private HashSet<String> namesTosave;
     private static volatile long totalBytesRead = 0;
+    private long bytesRead = 0;
     private int speedLimit;
     private static volatile int elapsedTime;
 
@@ -18,6 +19,14 @@ public class Downloader implements Runnable {
         this.url = url;
         this.namesTosave = namesTosave;
         speedLimit = Manager.getSpeedLimit();
+    }
+
+    public static long getTotalBytesRead() {
+        return totalBytesRead;
+    }
+
+    public static int getElapsedTime() {
+        return elapsedTime;
     }
 
     @Override
@@ -41,7 +50,8 @@ public class Downloader implements Runnable {
 
                             long now = System.currentTimeMillis();
                             totalBytesRead += bytes;
-                            currentSpeed = Math.round(totalBytesRead / ((float) (now - initTime ) / 1000));
+                            bytesRead += bytes;
+                            currentSpeed = Math.round(bytesRead / ((float) (now - initTime ) / 1000));
 
                             if (speedLimit > 0 && currentSpeed > speedLimit) {
                                 int timeSleep = Math.round((float) (currentSpeed - speedLimit) / speedLimit * (now - initTime));
@@ -52,9 +62,9 @@ public class Downloader implements Runnable {
                                 }
                             }
                             byteArrayOutputStream.write(buffer,0,bytes);
-                            for (String fileName : namesTosave) {
-                                saveFiles(byteArrayOutputStream,fileName);
-                            }
+                        }
+                        for (String fileName : namesTosave) {
+                            saveFiles(byteArrayOutputStream,fileName);
                         }
                     }
                 }
@@ -63,9 +73,6 @@ public class Downloader implements Runnable {
             System.err.println("Ошибка загрузки файла. "+ url);
         }
         elapsedTime =(int)(System.currentTimeMillis()- Launch.getTime())/1000;
-      //  System.out.println("elapsed time "+elapsedTime);
-      //  System.out.println("total kilobytes read" +totalBytesRead/1000 );
-
     }
 
     private void saveFiles (ByteArrayOutputStream b, String fileName){
