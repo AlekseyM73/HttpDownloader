@@ -9,13 +9,14 @@ public class Launch {
     }
 
     public static void main(String[] args)  {
-        System.setProperty("java.net.useSystemProxies", "true");
+        time = System.currentTimeMillis();
+       // System.setProperty("java.net.useSystemProxies", "true");
          int numberOfThreads = 0;
          int speedLimit = 0 ;
          String pathToFile = "";
          String outputFolder = "";
 
-        if (args.length>1){
+        if (args.length>=4){
 
            for (int i=0;i<args.length;i++){
                String arg = args[i];
@@ -41,8 +42,7 @@ public class Launch {
                                 break;
                         }
                     }
-                }
-                catch (IllegalArgumentException e){
+                } catch (IllegalArgumentException e){
                     System.err.println("Указаны неверные параметры.");
                     return;
                 }
@@ -61,7 +61,9 @@ public class Launch {
             System.out.println("Неправильно указан путь к папке для загруженных файлов.");
             return;
         }
-        time = System.currentTimeMillis();
+        if (numberOfThreads == 0){
+            numberOfThreads = 1;
+        }
         new Manager(numberOfThreads,speedLimit,pathToFile,outputFolder).startDownload();
     }
 

@@ -3,9 +3,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
 
-/**
- * Created by Makarovaa on 06.02.18.
- */
 public class Downloader implements Runnable {
 
     private String url;
@@ -41,12 +38,12 @@ public class Downloader implements Runnable {
                 try (InputStream inputStream = connect.getInputStream()) {
                     try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
-                        long initTime = System.currentTimeMillis();
                         byte buffer[] = new byte[1024];
                         int bytes;
+                        int currentSpeed;
+                        long initTime = System.currentTimeMillis();
 
                         while ((bytes = inputStream.read(buffer))>=0) {
-                            int currentSpeed;
 
                             long now = System.currentTimeMillis();
                             totalBytesRead += bytes;
